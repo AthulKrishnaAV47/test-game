@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="description" content="StickLab: Ultimate Physics Sandbox — a 2D stickman ragdoll physics playground. Spawn ragdolls, build contraptions, bend gravity and blow things up." />
+    <meta name="theme-color" content="#101a33" />
+    <title>StickLab: Ultimate Physics Sandbox</title>
+    <link rel="stylesheet" href="./src/styles/main.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Phaser canvas is injected here -->
+      <div id="game-container" aria-label="StickLab game canvas"></div>
+
+      <!-- ================= MAIN MENU ================= -->
+      <section id="menu-screen" class="screen visible">
+        <div class="menu-grid-bg" aria-hidden="true"></div>
+        <div class="menu-content">
+          <header class="menu-header">
+            <div class="logo-mark" aria-hidden="true">
+              <svg viewBox="0 0 64 64" role="img">
+                <circle cx="32" cy="13" r="9" />
+                <path d="M32 22 L32 40 M32 26 L16 33 M32 26 L48 33 M32 40 L22 56 M32 40 L42 56" />
+              </svg>
+            </div>
+            <div>
+              <h1 class="game-title">Stick<span>Lab</span></h1>
+              <p class="game-subtitle">Ultimate Physics Sandbox</p>
+            </div>
+          </header>
+
+          <nav class="menu-buttons" id="menu-buttons">
+            <button class="menu-btn primary" data-action="sandbox">
+              <span class="mi" data-icon="play"></span><span class="mb-text"><strong>Play Sandbox</strong><em>Free-form physics playground</em></span>
+            </button>
+            <button class="menu-btn" data-action="challenge">
+              <span class="mi" data-icon="trophy"></span><span class="mb-text"><strong>Challenge Mode</strong><em>15 physics puzzles</em></span>
+            </button>
+            <button class="menu-btn" data-action="build">
+              <span class="mi" data-icon="wrench"></span><span class="mb-text"><strong>Build Mode</strong><em>Design, test, iterate</em></span>
+            </button>
+            <button class="menu-btn" data-action="arena">
+              <span class="mi" data-icon="skull"></span><span class="mb-text"><strong>Destruction Arena</strong><em>Score driven demolition</em></span>
+            </button>
+            <button class="menu-btn" data-action="levels">
+              <span class="mi" data-icon="map"></span><span class="mb-text"><strong>Level Select</strong><em>Choose an environment</em></span>
+            </button>
+            <button class="menu-btn" data-action="character">
+              <span class="mi" data-icon="user"></span><span class="mb-text"><strong>Character Studio</strong><em>Colours, hats, ragdoll presets</em></span>
+            </button>
+            <button class="menu-btn" data-action="achievements">
+              <span class="mi" data-icon="medal"></span><span class="mb-text"><strong>Achievements</strong><em>Progress &amp; unlocks</em></span>
+            </button>
+            <button class="menu-btn" data-action="settings">
+              <span class="mi" data-icon="cog"></span><span class="mb-text"><strong>Settings</strong><em>Audio, video, controls</em></span>
+            </button>
+            <button class="menu-btn" data-action="help">
+              <span class="mi" data-icon="question"></span><span class="mb-text"><strong>How to Play</strong><em>Controls &amp; tool guide</em></span>
+            </button>
+          </nav>
+
+          <footer class="menu-footer">
+            <span id="menu-stats" class="menu-stats"></span>
+            <span class="menu-version">v1.0.0 · Phaser 3 + Matter.js</span>
+          </footer>
+        </div>
+      </section>
+
+      <!-- ================= IN-GAME HUD ================= -->
+      <div id="hud" class="hidden" aria-live="off">
+        <header id="topbar" class="panel">
+          <div class="topbar-left">
+            <button class="icon-btn" id="btn-back-menu" title="Back to main menu (Esc twice / Menu)" data-icon="home"></button>
+            <div class="brand">
+              <span class="brand-name">StickLab</span>
+              <span class="mode-badge" id="mode-badge">Sandbox</span>
+            </div>
+          </div>
+
+          <div class="topbar-center" id="sim-controls">
+            <div class="sim-group">
+              <button class="icon-btn" data-sim="play" title="Play (Space)" data-icon="play"></button>
+              <button class="icon-btn" data-sim="pause" title="Pause / Resume (P)" data-icon="pause"></button>
+              <button class="icon-btn" data-sim="step" title="Step one frame (.)" data-icon="step"></button>
+              <button class="icon-btn" data-sim="reset" title="Reset experiment (R)" data-icon="reset"></button>
+              <button class="icon-btn danger" data-sim="clear" title="Clear all objects (Shift+C)" data-icon="trash"></button>
+            </div>
+            <div class="sim-group speed-group" title="Simulation speed">
+              <button class="chip" data-speed="0.25">0.25×</button>
+              <button class="chip" data-speed="0.5">0.5×</button>
+              <button class="chip active" data-speed="1">1×</button>
+              <button class="chip" data-speed="2">2×</button>
+              <input type="range" id="speed-slider" min="0.1" max="3" step="0.05" value="1" title="Simulation speed" />
+            </div>
+            <div class="sim-group">
+              <button class="icon-btn" data-sim="gravity" title="Toggle gravity (G)" data-icon="gravity"></button>
+              <button class="icon-btn" data-sim="undo" title="Undo (Z)" data-icon="undo"></button>
+              <button class="icon-btn" data-sim="redo" title="Redo (Y)" data-icon="redo"></button>
+            </div>
+            <div class="sim-group">
+              <button class="icon-btn" data-sim="save" title="Save / manage layouts (Ctrl+S)" data-icon="save"></button>
+              <button class="icon-btn" data-sim="load" title="Load layout" data-icon="folder"></button>
+              <button class="icon-btn" data-sim="fullscreen" title="Fullscreen (F)" data-icon="expand"></button>
+              <button class="icon-btn" data-sim="clean" title="Toggle clean HUD view (H)" data-icon="eye"></button>
+            </div>
+          </div>
+
+          <div class="topbar-right">
+            <div class="meter" title="Frames per second">
+              <span class="meter-label">FPS</span><span class="meter-value" id="fps-value">60</span>
+            </div>
+            <div class="meter" title="Active physics bodies">
+              <span class="meter-label">Bodies</span><span class="meter-value" id="body-value">0</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Left toolbar -->
+        <aside id="toolbar" class="panel">
+          <div class="panel-head">
+            <h2>Tools</h2>
+            <button class="collapse-btn" data-collapse="toolbar" title="Collapse tools panel" data-icon="chevron-left"></button>
+          </div>
+          <div class="tool-list" id="tool-list"></div>
+          <div class="panel-foot">
+            <kbd>1</kbd>–<kbd>9</kbd> <kbd>0</kbd> quick tools
+          </div>
+        </aside>
+
+        <!-- Object library -->
+        <aside id="library-panel" class="panel">
+          <div class="panel-head">
+            <h2>Object Library</h2>
+            <button class="collapse-btn" data-collapse="library-panel" title="Collapse library" data-icon="chevron-left"></button>
+          </div>
+          <div class="library-search">
+            <input type="search" id="object-search" placeholder="Search objects…" autocomplete="off" />
+          </div>
+          <div class="library-tabs" id="library-tabs"></div>
+          <div class="library-body" id="library-body"></div>
+          <div class="library-detail" id="library-detail">
+            <div class="ld-preview" id="ld-preview"></div>
+            <div class="ld-info">
+              <strong id="ld-name">Pick an object</strong>
+              <span id="ld-meta">Hover a card to inspect it</span>
+            </div>
+            <button class="btn small" id="ld-fav" title="Toggle favourite" data-icon="star"></button>
+            <button class="btn primary small" id="ld-spawn">Spawn</button>
+          </div>
+        </aside>
+
+        <!-- Inspector -->
+        <aside id="inspector" class="panel">
+          <div class="panel-head">
+            <h2>Inspector</h2>
+            <button class="collapse-btn" data-collapse="inspector" title="Collapse inspector" data-icon="chevron-right"></button>
+          </div>
+          <div class="inspector-body" id="inspector-body">
+            <div class="empty-state" id="inspector-empty">
+              <span data-icon="cursor" class="empty-icon"></span>
+              <p>Nothing selected</p>
+              <small>Use the <strong>Select</strong> tool and click an object to edit its physics properties.</small>
+            </div>
+            <div id="inspector-content" class="hidden"></div>
+          </div>
+          <div class="panel-foot world-panel">
+            <details id="world-details">
+              <summary>World &amp; Simulation</summary>
+              <div class="world-body" id="world-body"></div>
+            </details>
+          </div>
+        </aside>
+
+        <!-- Challenge banner -->
+        <div id="challenge-banner" class="panel hidden">
+          <div class="cb-main">
+            <span class="cb-index" id="cb-index">1 / 15</span>
+            <strong id="cb-name">Challenge</strong>
+            <p id="cb-objective">Objective</p>
+          </div>
+          <div class="cb-progress">
+            <div class="cb-bar"><span id="cb-bar-fill"></span></div>
+            <span id="cb-status">In progress</span>
+          </div>
+          <div class="cb-actions">
+            <button class="btn small" id="cb-hint">Hint</button>
+            <button class="btn small" id="cb-retry" data-icon="reset">Retry</button>
+            <button class="btn small primary hidden" id="cb-next">Next</button>
+          </div>
+        </div>
+
+        <!-- Arena scoreboard -->
+        <div id="arena-board" class="panel hidden">
+          <h3>Destruction Meter</h3>
+          <ul>
+            <li><span>Objects destroyed</span><strong id="arena-destroyed">0</strong></li>
+            <li><span>Max impact force</span><strong id="arena-impact">0</strong></li>
+            <li><span>Ragdolls launched</span><strong id="arena-launched">0</strong></li>
+            <li><span>Longest explosion chain</span><strong id="arena-chain">0</strong></li>
+            <li class="total"><span>Destruction score</span><strong id="arena-score">0</strong></li>
+          </ul>
+          <button class="btn small" id="arena-reset">Reset run</button>
+        </div>
+
+        <!-- Status bar -->
+        <footer id="statusbar" class="panel">
+          <div class="status-left">
+            <span class="status-pill" id="status-sim">Running</span>
+            <span class="status-item" id="status-mode">Free Sandbox</span>
+            <span class="status-item" id="status-objects">0 / 300 bodies</span>
+            <span class="status-item" id="status-selection">No selection</span>
+            <span class="status-item warn hidden" id="status-limit">Body limit reached</span>
+          </div>
+          <div class="status-right">
+            <span class="status-item" id="status-coords">0, 0</span>
+            <span class="status-item" id="status-hint">Drag with left mouse to grab · right-drag to pan · wheel to zoom</span>
+          </div>
+        </footer>
+
+        <!-- Contextual first-run hint -->
+        <div id="control-hint" class="hidden">
+          <div class="ch-card">
+            <h4>Quick controls</h4>
+            <ul>
+              <li><kbd>A</kbd><kbd>D</kbd> move ragdoll · <kbd>W</kbd>/<kbd>Space</kbd> jump</li>
+              <li><kbd>1</kbd>-<kbd>0</kbd> tools · <kbd>G</kbd> gravity · <kbd>R</kbd> reset</li>
+              <li>Left-drag grabs objects · right-drag pans · wheel zooms</li>
+            </ul>
+            <button class="btn small primary" id="ch-dismiss">Got it</button>
+          </div>
+        </div>
+
+        <!-- Tool overlay hint text -->
+        <div id="tool-tip-banner" class="hidden"></div>
+      </div>
+
+      <!-- ================= OVERLAYS / MODALS ================= -->
+      <div id="loading-overlay" class="overlay hidden">
+        <div class="loader">
+          <div class="loader-stick" aria-hidden="true"></div>
+          <p id="loading-text">Loading…</p>
+        </div>
+      </div>
+
+      <div id="pause-overlay" class="overlay hidden">
+        <div class="modal narrow">
+          <h3>Paused</h3>
+          <p class="muted">Physics updates are frozen. You can still select and inspect objects.</p>
+          <div class="modal-actions col">
+            <button class="btn primary" data-pause="resume">Resume</button>
+            <button class="btn" data-pause="step">Step one frame</button>
+            <button class="btn" data-pause="reset">Reset experiment</button>
+            <button class="btn" data-pause="settings">Settings</button>
+            <button class="btn danger" data-pause="menu">Main menu</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="modal-root"></div>
+      <div id="toast-root" class="toast-root" aria-live="polite"></div>
+      <div id="screen-flash" aria-hidden="true"></div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
